@@ -7,20 +7,27 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 app = FastAPI()
 
 
+def environment() -> str:
+    return os.getenv("ENVIRONMENT", "unknown")
+
+
 def force_unhealthy() -> bool:
     return os.getenv("FORCE_UNHEALTHY", "").lower() in ("1", "true", "yes")
 
 
 @app.get("/", response_class=PlainTextResponse)
 def root() -> str:
-    return "Hello World"
+    return f"Hello World from {environment()}"
 
 
 @app.get("/health")
 def health() -> JSONResponse:
     if force_unhealthy():
-        return JSONResponse(status_code=500, content={"status": "unhealthy"})
-    return JSONResponse(content={"status": "ok"})
+        return JSONResponse(
+            status_code=500,
+            content={"status": "unhealthy", "environment": environment()},
+        )
+    return JSONResponse(content={"status": "ok", "environment": environment()})
 
 
 if __name__ == "__main__":
