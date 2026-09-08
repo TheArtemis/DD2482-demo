@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+BARE_REPO=/opt/git/cd-demo.git
+RELEASE_DIR=/opt/cd-demo/release
+
+while read -r _oldrev newrev refname; do
+  if [[ "$refname" != "refs/heads/main" ]]; then
+    continue
+  fi
+
+  git --git-dir="$BARE_REPO" --work-tree="$RELEASE_DIR" checkout --force "$newrev"
+  /opt/cd-demo/deploy.sh "$newrev"
+done

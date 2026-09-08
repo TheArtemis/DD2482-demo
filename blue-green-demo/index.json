@@ -1,0 +1,33 @@
+{
+  "title": "Continuous Deployment with Blue/Green",
+  "description": "Deploy a tiny Flask application through a local Git hook, validate the inactive slot, then switch Nginx with no external CI service.",
+  "details": {
+    "intro": {
+      "text": "intro.md",
+      "background": "background.sh"
+    },
+    "steps": [
+      {
+        "title": "Release v2 and rollback v3",
+        "text": "demo.md"
+      }
+    ],
+    "finish": {
+      "text": "finish.md"
+    }
+  },
+  "backend": {
+    "imageid": "ubuntu-4GB"
+  },
+  "assets": {
+    "host01": [
+      { "file": "app.py", "target": "/root/cd-demo" },
+      { "file": "requirements.txt", "target": "/root/cd-demo" },
+      { "file": "Dockerfile", "target": "/root/cd-demo" },
+      { "file": "deploy.sh", "target": "/opt/cd-demo", "chmod": "+x" },
+      { "file": "post-receive", "target": "/opt/git/cd-demo.git/hooks", "chmod": "+x" },
+      { "file": "nginx-template.conf", "target": "/opt/cd-demo" },
+      { "file": "reset-demo.sh", "target": "/root/cd-demo", "chmod": "+x" }
+    ]
+  }
+}
