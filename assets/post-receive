@@ -4,6 +4,7 @@ set -Eeuo pipefail
 BARE_REPO=/opt/git/cd-demo.git
 RELEASE_DIR=/opt/cd-demo/release
 
+# <old-oid> SP <new-oid> SP <ref-name> LF
 while read -r _oldrev newrev refname; do
   if [[ "$refname" != "refs/heads/main" ]]; then
     continue
