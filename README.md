@@ -1,6 +1,6 @@
 # DD2482-demo
 
-The KillerCoda scenario is in [blue-green-demo](blue-green-demo/). It demonstrates a local, deterministic continuous-deployment pipeline:
+KillerCoda scenario for a local, deterministic continuous-deployment pipeline:
 
 ```text
 working repository -> bare Git repository -> post-receive hook -> BLUE/GREEN deployment -> Nginx
