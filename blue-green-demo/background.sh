@@ -15,8 +15,11 @@ apt-get install -y -qq nginx
 rm -f /etc/nginx/sites-enabled/default
 systemctl enable --now nginx
 
-mkdir -p "$DEPLOY_ROOT/release"
+mkdir -p "$DEPLOY_ROOT/release" "$(dirname "$BARE_REPO")"
+# Init the bare repo first. KillerCoda assets must not land under hooks/
+# beforehand — git init recreates that directory from templates.
 git init --bare --initial-branch=main "$BARE_REPO"
+cp "$DEPLOY_ROOT/post-receive" "$BARE_REPO/hooks/post-receive"
 chmod +x "$BARE_REPO/hooks/post-receive" "$DEPLOY_ROOT/deploy.sh" "$WORKING_REPO/reset-demo.sh"
 
 git -C "$WORKING_REPO" init -b main

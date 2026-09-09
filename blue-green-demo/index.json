@@ -14,20 +14,20 @@
     ],
     "finish": {
       "text": "finish.md"
+    },
+    "assets": {
+      "host01": [
+        { "file": "app.py", "target": "/root/cd-demo" },
+        { "file": "requirements.txt", "target": "/root/cd-demo" },
+        { "file": "Dockerfile", "target": "/root/cd-demo" },
+        { "file": "deploy.sh", "target": "/opt/cd-demo", "chmod": "+x" },
+        { "file": "post-receive", "target": "/opt/cd-demo", "chmod": "+x" },
+        { "file": "nginx-template.conf", "target": "/opt/cd-demo" },
+        { "file": "reset-demo.sh", "target": "/root/cd-demo", "chmod": "+x" }
+      ]
     }
   },
   "backend": {
     "imageid": "ubuntu-4GB"
-  },
-  "assets": {
-    "host01": [
-      { "file": "app.py", "target": "/root/cd-demo" },
-      { "file": "requirements.txt", "target": "/root/cd-demo" },
-      { "file": "Dockerfile", "target": "/root/cd-demo" },
-      { "file": "deploy.sh", "target": "/opt/cd-demo", "chmod": "+x" },
-      { "file": "post-receive", "target": "/opt/git/cd-demo.git/hooks", "chmod": "+x" },
-      { "file": "nginx-template.conf", "target": "/opt/cd-demo" },
-      { "file": "reset-demo.sh", "target": "/root/cd-demo", "chmod": "+x" }
-    ]
   }
 }
