@@ -7,3 +7,6 @@ working repository -> bare Git repository -> post-receive hook -> BLUE/GREEN dep
 ```
 
 GitHub is used only to publish the KillerCoda scenario; it is deliberately outside the live deployment path.
+
+
+Test
