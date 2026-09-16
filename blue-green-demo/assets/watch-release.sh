@@ -17,19 +17,26 @@ log() {
 }
 
 log "Watching $BRANCH at $(git --git-dir="$REPO" remote get-url origin)"
-fetch_failed=false
+fetch_failures=0
 
 while true; do
-  if ! fetch_output=$(GIT_TERMINAL_PROMPT=0 git --git-dir="$REPO" fetch --quiet --depth=1 origin \
-    "refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" 2>&1); then
-    if [[ "$fetch_failed" == false ]]; then
-      log "Could not fetch $BRANCH: $fetch_output"
-      fetch_failed=true
+  # A depth-1 fetch may hide the parent commit, so Git cannot prove a normal
+  # branch update is fast-forward. The + updates only this VM's tracking ref.
+  if fetch_output=$(GIT_TERMINAL_PROMPT=0 timeout 20s git --git-dir="$REPO" fetch --depth=1 origin \
+    "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" 2>&1); then
+    if (( fetch_failures > 0 )); then
+      log "GitHub fetch recovered after $fetch_failures failed attempt(s)"
+    fi
+    fetch_failures=0
+  else
+    fetch_status=$?
+    fetch_failures=$((fetch_failures + 1))
+    if (( fetch_failures == 1 || fetch_failures % 6 == 0 )); then
+      log "Could not fetch $BRANCH (exit $fetch_status, attempt $fetch_failures): ${fetch_output:-Git produced no error output}"
     fi
     sleep "$POLL_SECONDS"
     continue
   fi
-  fetch_failed=false
 
   revision=$(git --git-dir="$REPO" rev-parse "refs/remotes/origin/$BRANCH")
   if [[ "$revision" != "$(cat "$LAST_ATTEMPTED" 2>/dev/null || true)" ]]; then

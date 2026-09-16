@@ -46,10 +46,13 @@ git init --bare "$BARE_REPO"
 git --git-dir="$BARE_REPO" remote add origin "$GITHUB_REPO"
 # If release already exists, treat its current commit as the starting point.
 # Only commits pushed after this VM starts should trigger the first deployment.
-if GIT_TERMINAL_PROMPT=0 git --git-dir="$BARE_REPO" fetch --quiet --depth=1 origin \
-  refs/heads/release:refs/remotes/origin/release; then
-  git --git-dir="$BARE_REPO" rev-parse refs/remotes/origin/release \
-    > "$DEPLOY_ROOT/last-attempted-revision"
+if baseline_output=$(GIT_TERMINAL_PROMPT=0 timeout 20s git --git-dir="$BARE_REPO" fetch --depth=1 origin \
+  +refs/heads/release:refs/remotes/origin/release 2>&1); then
+  baseline_revision=$(git --git-dir="$BARE_REPO" rev-parse refs/remotes/origin/release)
+  printf '%s\n' "$baseline_revision" > "$DEPLOY_ROOT/last-attempted-revision"
+  echo "Starting from release revision $baseline_revision; waiting for a new push" | tee -a "$DEPLOY_ROOT/deploy.log"
+else
+  echo "Initial release fetch failed; watcher will retry: ${baseline_output:-Git produced no error output}" | tee -a "$DEPLOY_ROOT/deploy.log"
 fi
 cat > /etc/systemd/system/cd-demo-watch.service <<'EOF'
 [Unit]
