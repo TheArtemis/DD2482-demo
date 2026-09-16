@@ -6,6 +6,13 @@ BARE_REPO=/opt/git/cd-demo.git
 DEPLOY_ROOT=/opt/cd-demo
 GITHUB_REPO=https://github.com/TheArtemis/DD2482-demo.git
 
+# Keep setup output even if Nginx never starts and /logs is unavailable.
+mkdir -p "$DEPLOY_ROOT"
+exec >"$DEPLOY_ROOT/setup.log" 2>&1
+chmod 644 "$DEPLOY_ROOT/setup.log"
+trap 'status=$?; printf "Setup failed at line %s (exit %s): %s\n" "$LINENO" "$status" "$BASH_COMMAND"' ERR
+echo "Starting scenario setup"
+
 # Wait for Docker to be ready
 until docker info >/dev/null 2>&1; do
   sleep 1
