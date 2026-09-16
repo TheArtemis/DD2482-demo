@@ -1,6 +1,6 @@
 {
   "title": "Continuous Deployment with Blue/Green",
-  "description": "Deploy a tiny Flask application through a local Git hook, validate the inactive slot, then switch Nginx with no external CI service.",
+  "description": "Push a tiny Flask application to GitHub, then watch the VM fetch, validate, and deploy it with blue/green switching.",
   "details": {
     "intro": {
       "text": "intro.md",
@@ -21,9 +21,8 @@
         { "file": "requirements.txt", "target": "/root/cd-demo" },
         { "file": "Dockerfile", "target": "/root/cd-demo" },
         { "file": "deploy.sh", "target": "/opt/cd-demo", "chmod": "+x" },
-        { "file": "post-receive", "target": "/opt/cd-demo", "chmod": "+x" },
-        { "file": "nginx-template.conf", "target": "/opt/cd-demo" },
-        { "file": "reset-demo.sh", "target": "/root/cd-demo", "chmod": "+x" }
+        { "file": "watch-release.sh", "target": "/opt/cd-demo", "chmod": "+x" },
+        { "file": "nginx-template.conf", "target": "/opt/cd-demo" }
       ]
     }
   },

@@ -1,28 +1,21 @@
-# Local continuous deployment
+# GitHub-powered continuous deployment
 
-This VM is deliberately self-contained. GitHub stores the KillerCoda scenario, but it is **not** in the live deployment path.
+This VM starts with the bundled v1 app. A service checks the GitHub `release` branch every 10 seconds. When it sees a new commit, it fetches the app files and runs the blue/green deployment. Pushes happen from **your own machine**.
 
 ```text
-/root/cd-demo (working repository)
-        | git push production main
-        v
-/opt/git/cd-demo.git (bare repository)
-        | post-receive hook
-        v
-/opt/cd-demo/deploy.sh
-        | build, start inactive slot, validate, switch proxy
-        v
-native Nginx :80  -->  BLUE :8001  or  GREEN :8002
+Your machine -> GitHub release branch -> VM poller -> inactive BLUE/GREEN slot -> Nginx
+                    |-> GitHub Actions unit tests
 ```
 
-The setup script has already committed and pushed release `v1`, then started the other slot manually so both fixed mappings are visible:
+Killercoda reads the scenario from `main`. The app poller reads `release`; it does not need another webhook or a GitHub credential on the VM if the repository is public. The first `release` push can happen after this scenario starts.
+
+Check the starting state:
 
 ```bash
 curl -s http://127.0.0.1:8001/
 curl -s http://127.0.0.1:8002/
 curl -s http://127.0.0.1/ | grep -E 'Version|Slot'
+systemctl status cd-demo-watch --no-pager
 ```
 
 Open the public endpoint here: {{TRAFFIC_HOST1_80}}
-
-Only `VERSION` and `BROKEN` in `app.py` change during the demonstration. Continue to the next step to release v2 and prove that an unhealthy release is not switched into production.

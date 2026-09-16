@@ -1,40 +1,46 @@
-# Deploy v2, then reject broken v3
+# Push v2, then watch v3 fail safely
 
-Work only in `/root/cd-demo`. The `production` remote is the local bare repository; its `post-receive` hook runs the deployment.
-
-Release v2:
+On **your own machine**, create `release` from the current repository if it does not exist yet:
 
 ```bash
-cd /root/cd-demo
-sed -i 's/VERSION = "v1"/VERSION = "v2"/' app.py
-git add app.py
-git commit -m "Release v2"
-git push production main
-curl -s http://127.0.0.1/ | grep -E 'Version|Slot'
+git switch -c release
+git push -u origin release
 ```
 
-The release starts the inactive slot, waits for `GET /health` to return HTTP 200, performs a smoke test on `/`, then validates and reloads native Nginx to that slot. It does not restart the production app; it changes only the reverse-proxy destination. Confirm both the proxy and the individual slots:
+If `release` already exists, switch to it and pull its latest commit instead. The GitHub Actions workflow runs unit tests on each push.
+
+In your local checkout, change `VERSION` to `"v2"` in `blue-green-demo/assets/app.py`, then push:
 
 ```bash
-curl -i http://127.0.0.1/health
-curl -s http://127.0.0.1:8001/
-curl -s http://127.0.0.1:8002/
+git add blue-green-demo/assets/app.py
+git commit -m "Release v2"
+git push origin release
+```
+
+The VM polls every 10 seconds; the Docker build can take longer. In the **Killercoda terminal**, watch the deployment and confirm the result:
+
+```bash
+journalctl -u cd-demo-watch -f
+curl -s http://127.0.0.1/ | grep -E 'Version|Slot'
 cat /opt/cd-demo/active-slot
 ```
 
-Now make v3 fail its health check. The push is expected to fail; the previously active production endpoint must remain on v2. The previous version remains running, ready for a fast rollback.
+Press Ctrl+C to stop following the log. The release starts the inactive slot, checks `/health` and `/`, then switches Nginx only after both checks pass.
+
+Back on **your machine**, set `VERSION = "v3"` and `BROKEN = True` in `blue-green-demo/assets/app.py`, then push:
 
 ```bash
-sed -i 's/VERSION = "v2"/VERSION = "v3"/; s/BROKEN = False/BROKEN = True/' app.py
-git add app.py
+git add blue-green-demo/assets/app.py
 git commit -m "Attempt broken v3"
-git push production main || true
+git push origin release
+```
+
+The VM attempts this commit once. Its health check rejects v3, leaving v2 serving traffic. Check in Killercoda:
+
+```bash
+journalctl -u cd-demo-watch -n 30 --no-pager
 curl -s http://127.0.0.1/ | grep -E 'Version|Slot'
 curl -i http://127.0.0.1/health
 ```
 
-To restore a clean v1 state for another audience, run:
-
-```bash
-/root/cd-demo/reset-demo.sh
-```
+To run the demo again, push a new commit on `release` that restores `VERSION = "v1"` and `BROKEN = False`.
