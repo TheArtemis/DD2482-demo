@@ -23,4 +23,4 @@ The unsafe deployer stops the live v1 container before validating v3. V3 fails i
 curl -i http://127.0.0.1/
 ```
 
-Expected: **HTTP 502**. The GitHub test for a healthy release also fails, but this VM does not wait for CI before attempting deployment.
+Expected: **HTTP 502**. GitHub Actions stays green because the unit tests verify how both healthy and broken modes respond. Those tests do not approve a release for live traffic.

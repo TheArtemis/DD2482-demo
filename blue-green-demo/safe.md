@@ -24,4 +24,4 @@ curl -i http://127.0.0.1/
 cat /opt/cd-demo/active-slot
 ```
 
-Expected: **HTTP 200**, still v1. [The deployment log]({{TRAFFIC_HOST1_80}}/logs) shows the rejected candidate.
+Expected: **HTTP 200**, still v1. [The deployment log]({{TRAFFIC_HOST1_80}}/logs) shows the rejected candidate even though the unit tests pass.
