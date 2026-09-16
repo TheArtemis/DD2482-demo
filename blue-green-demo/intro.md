@@ -9,6 +9,6 @@ GREEN v3  ← candidate
 
 The candidate gets a health check and a smoke test **before** Nginx switches traffic. If either check fails, the live slot keeps serving users.
 
-In this demo, we first skip that protection so the failure is visible. Then we repeat the same release with blue/green enabled.
+The presentation shows the same broken release twice: first without blue/green protection, then with it enabled.
 
-[Open the app]({{TRAFFIC_HOST1_80}}) and [open the deployment log]({{TRAFFIC_HOST1_80}}/logs) in separate tabs.
+[Live app]({{TRAFFIC_HOST1_80}}) · [Deployment log]({{TRAFFIC_HOST1_80}}/logs)
