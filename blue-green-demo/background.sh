@@ -24,9 +24,8 @@ mkdir -p "$DEPLOY_ROOT/release" "$(dirname "$BARE_REPO")"
 chmod +x "$DEPLOY_ROOT/deploy.sh" "$DEPLOY_ROOT/deploy-unsafe.sh" \
   "$DEPLOY_ROOT/reset-v1.sh" "$DEPLOY_ROOT/watch-release.sh"
 ln -sf "$DEPLOY_ROOT/reset-v1.sh" /usr/local/bin/reset
-touch "$DEPLOY_ROOT/deploy.log" "$DEPLOY_ROOT/nginx-access.log" "$DEPLOY_ROOT/nginx-error.log"
-chmod 644 "$DEPLOY_ROOT/deploy.log" "$DEPLOY_ROOT/nginx-access.log" \
-  "$DEPLOY_ROOT/nginx-error.log" "$DEPLOY_ROOT/logs.html"
+touch "$DEPLOY_ROOT/deploy.log"
+chmod 644 "$DEPLOY_ROOT/deploy.log" "$DEPLOY_ROOT/logs.html"
 printf '%s\n' unsafe > "$DEPLOY_ROOT/deployment-mode"
 
 # Boot with the bundled v1, even when the release branch has not been created yet.

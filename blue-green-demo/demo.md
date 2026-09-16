@@ -28,13 +28,13 @@ git push origin release
 
 If those two lines were already set from an earlier run, use `git commit --allow-empty -m "Retry broken v3"` before pushing. A new commit is needed because the VM deploys each commit once.
 
-Watch `/logs` until it says the unsafe deployment was rejected. The first deployment stops the live v1 container, runs v3 on the live port, then removes v3 after its health check fails. Nginx has no working app upstream. In the Killercoda terminal, request the app to produce a visible Nginx error:
+Watch `/logs` until it says the unsafe deployment was rejected. The first deployment stops the live v1 container, runs v3 on the live port, then removes v3 after its health check fails. Nginx has no working app upstream. In the Killercoda terminal, check the failed request:
 
 ```bash
 curl -i http://127.0.0.1/
 ```
 
-You should see HTTP 502 after v3 is removed. The Nginx access and error sections on `/logs` show the failed request. The GitHub unit-test workflow should also turn red for this commit; the VM deliberately does not wait for CI in this comparison.
+You should see HTTP 502 after v3 is removed. The deployment log shows the failed health check. The GitHub unit-test workflow should also turn red for this commit; the VM deliberately does not wait for CI in this comparison.
 
 ## 2. Restore v1 and enable blue/green
 
@@ -64,4 +64,4 @@ curl -i http://127.0.0.1/
 cat /opt/cd-demo/active-slot
 ```
 
-You should still see HTTP 200 and v1. The Nginx access log shows a successful request; there is no new upstream error for this attempt.
+You should still see HTTP 200 and v1. The deployment log shows that the failed health check kept the live slot unchanged.
