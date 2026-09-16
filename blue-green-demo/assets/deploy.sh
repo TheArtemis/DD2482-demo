@@ -35,7 +35,7 @@ docker run --detach --name "$candidate_name" \
 echo "Waiting for $candidate on :$candidate_port"
 healthy=false
 for _ in {1..10}; do
-  if curl --fail --silent --show-error "http://127.0.0.1:${candidate_port}/health" >/dev/null; then
+  if curl --fail --silent "http://127.0.0.1:${candidate_port}/health" >/dev/null; then
     healthy=true
     break
   fi
