@@ -52,8 +52,7 @@
     "hideintro": true,
     "showdashboard": true,
     "dashboards": [
-      { "name": "Live app", "port": 80 },
-      { "name": "Deployment logs", "port": 81 }
+      { "name": "Live app", "port": 80 }
     ]
   }
 }

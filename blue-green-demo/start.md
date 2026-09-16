@@ -12,6 +12,5 @@ The candidate gets a health check and a smoke test **before** Nginx switches tra
 The presentation shows the same broken release twice: first without blue/green protection, then with it enabled.
 
 - [Open the live app]({{TRAFFIC_HOST1_80}})
-- [View deployment logs]({{TRAFFIC_HOST1_81}})
 
-These pages are also available in the **Live app** and **Deployment logs** tabs.
+The app is also available in the **Live app** tab.
