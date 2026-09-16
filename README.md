@@ -11,6 +11,6 @@ VSCode -> GitHub release -> VM poller -> unsafe live replacement -> outage
 
 Killercoda reads the scenario from `main`. The VM independently checks `release` every 10 seconds and deploys each new commit once. The first broken v3 release uses an intentionally unsafe deployment. Run `reset` in the VM to restore v1 and switch to blue/green mode, then push another commit with the same broken v3 code. Finally, push healthy v4 to show a successful slot switch.
 
-The app and a separate `/logs` page are served by Nginx. `/logs` shows release fetches and deployment output, and remains available during the outage. The presentation starts at [the introduction](blue-green-demo/intro.md).
+The app and a separate `/logs` page are served by Nginx. `/logs` shows release fetches and deployment output, and remains available during the outage. The presentation starts at [the overview](blue-green-demo/start.md), which links to both pages after the scenario starts.
 
 The VM fetches over HTTPS without credentials, so the GitHub repository must be public. A private repository needs a separate read-only credential in the VM; Killercoda's deploy key is not available there.

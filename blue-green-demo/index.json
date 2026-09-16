@@ -3,10 +3,14 @@
   "description": "Compare a failed live replacement with a safe blue/green release, then deploy a healthy version.",
   "details": {
     "intro": {
-      "text": "intro.md",
-      "background": "background.sh"
+      "text": "intro.md"
     },
     "steps": [
+      {
+        "title": "Blue/green deployment",
+        "text": "start.md",
+        "background": "background.sh"
+      },
       {
         "title": "Demo architecture",
         "text": "architecture.md"
@@ -45,6 +49,7 @@
     "imageid": "ubuntu-4GB"
   },
   "environment": {
+    "hideintro": true,
     "showdashboard": true,
     "dashboards": [
       { "name": "Live app", "port": 80 }
