@@ -1,7 +1,5 @@
-# What the comparison showed
+# What blue/green gives us
 
-Both pushes contained the same broken v3 app. The unsafe deployment stopped the live v1 container before validation; after v3 failed, Nginx had no working upstream and returned HTTP 502. The reset restored the bundled v1 image and enabled blue/green mode.
+**Good:** The previous version keeps serving while a candidate starts and passes health and smoke checks. A failed candidate does not take over the live endpoint.
 
-With blue/green, the VM started v3 in the inactive slot and checked it before changing Nginx. The failed health check left v1 serving HTTP 200. The deployment log shows the decision, and the HTTP response shows its effect on requests.
-
-GitHub Actions tests run on each push. The v3 commits fail the test that expects a healthy release, but the VM intentionally watches GitHub commits rather than waiting for CI. This keeps the demo focused on the difference between the two deployment strategies.
+**Limit:** These checks only cover what they test. They may miss broken business behavior or other defects. Unit tests, integration tests, and other CI checks are still needed. This demo runs CI separately; a real release pipeline should require those checks to pass before deployment.

@@ -1,21 +1,14 @@
-# Unsafe deployment versus blue/green
+# Blue/green deployment
 
-The VM starts with v1 serving through Nginx. It checks GitHub's `release` branch every 10 seconds for commits pushed from your VSCode checkout. The first release uses an intentionally unsafe deployment: it replaces the live container before checking whether the replacement works.
+Two app slots run side by side. Nginx sends traffic to one slot while the other receives the next version.
 
-You will push a broken v3, watch the app fail, restore v1 on the VM, and push v3 again. The second push uses blue/green deployment and keeps v1 available.
-
-Keep these two pages open:
-
-- [The app]({{TRAFFIC_HOST1_80}})
-- [Live deployment logs]({{TRAFFIC_HOST1_80}}/logs)
-
-The log page is served directly by Nginx, so it remains available even when the app is down. Killercoda reads this scenario from `main`; the VM independently watches `release`. If `release` already exists when the VM starts, the VM treats its current commit as a baseline and waits for your next push.
-
-Confirm v1 in the Killercoda terminal:
-
-```bash
-curl -i http://127.0.0.1/
-cat /opt/cd-demo/deployment-mode
+```text
+BLUE  v1  ← live traffic
+GREEN v3  ← candidate
 ```
 
-You should see v1 and `unsafe`.
+The candidate gets a health check and a smoke test **before** Nginx switches traffic. If either check fails, the live slot keeps serving users.
+
+In this demo, we first skip that protection so the failure is visible. Then we repeat the same release with blue/green enabled.
+
+[Open the app]({{TRAFFIC_HOST1_80}}) and [open the deployment log]({{TRAFFIC_HOST1_80}}/logs) in separate tabs.

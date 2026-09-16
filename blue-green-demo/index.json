@@ -1,6 +1,6 @@
 {
-  "title": "Continuous Deployment with Blue/Green",
-  "description": "Compare an unsafe release that breaks v1 with a blue/green release that keeps it available.",
+  "title": "Blue/Green Deployment on Killercoda",
+  "description": "Compare a failed live replacement with a safe blue/green release, then deploy a healthy version.",
   "details": {
     "intro": {
       "text": "intro.md",
@@ -8,8 +8,20 @@
     },
     "steps": [
       {
-        "title": "Break the live app, then protect it with blue/green",
-        "text": "demo.md"
+        "title": "Demo architecture",
+        "text": "architecture.md"
+      },
+      {
+        "title": "Unsafe deployment",
+        "text": "unsafe.md"
+      },
+      {
+        "title": "Blue/green rejects v3",
+        "text": "safe.md"
+      },
+      {
+        "title": "Healthy release",
+        "text": "healthy.md"
       }
     ],
     "finish": {
