@@ -11,4 +11,4 @@ The candidate gets a health check and a smoke test **before** Nginx switches tra
 
 The presentation shows the same broken release twice: first without blue/green protection, then with it enabled.
 
-[Live app]({{TRAFFIC_HOST1_80}}) · [Deployment log]({{TRAFFIC_HOST1_80}}/logs)
+**Live app:** Killercoda menu (☰) → **Traffic / Ports** → Host 1, port **80** → **Access**. The **Live app** tab also opens port 80 when available. The deployment log is at `/logs` on the same port.

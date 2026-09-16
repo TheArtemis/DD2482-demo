@@ -43,5 +43,11 @@
   },
   "backend": {
     "imageid": "ubuntu-4GB"
+  },
+  "environment": {
+    "showdashboard": true,
+    "dashboards": [
+      { "name": "Live app", "port": 80 }
+    ]
   }
 }
