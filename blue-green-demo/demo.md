@@ -41,7 +41,7 @@ You should see HTTP 502 after v3 is removed. The Nginx access and error sections
 In the **Killercoda terminal**:
 
 ```bash
-/opt/cd-demo/reset-v1.sh
+reset
 curl -i http://127.0.0.1/
 cat /opt/cd-demo/deployment-mode
 ```
