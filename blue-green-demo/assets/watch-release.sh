@@ -17,19 +17,23 @@ log() {
 }
 
 log "Watching $BRANCH at $(git --git-dir="$REPO" remote get-url origin)"
+fetch_failed=false
 
 while true; do
-  log "Fetching $BRANCH from GitHub"
-  if ! GIT_TERMINAL_PROMPT=0 git --git-dir="$REPO" fetch --quiet --depth=1 origin \
-    "refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"; then
-    log "Could not fetch $BRANCH; retrying in $POLL_SECONDS seconds"
+  if ! fetch_output=$(GIT_TERMINAL_PROMPT=0 git --git-dir="$REPO" fetch --quiet --depth=1 origin \
+    "refs/heads/$BRANCH:refs/remotes/origin/$BRANCH" 2>&1); then
+    if [[ "$fetch_failed" == false ]]; then
+      log "Could not fetch $BRANCH: $fetch_output"
+      fetch_failed=true
+    fi
     sleep "$POLL_SECONDS"
     continue
   fi
+  fetch_failed=false
 
   revision=$(git --git-dir="$REPO" rev-parse "refs/remotes/origin/$BRANCH")
   if [[ "$revision" != "$(cat "$LAST_ATTEMPTED" 2>/dev/null || true)" ]]; then
-    log "New $BRANCH revision: $revision"
+    log "Fetched new $BRANCH release: $revision"
     staging=$(mktemp -d)
     if git --git-dir="$REPO" archive "$revision" \
       blue-green-demo/assets/app.py \
