@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deployment and Nginx logs</title>
+  <style>
+    body { margin: 0; background: #111827; color: #e5e7eb; font: 16px system-ui, sans-serif; }
+    main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    header { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+    h1 { margin: 0 0 8px; font-size: 1.6rem; }
+    h2 { font-size: 1.1rem; margin: 24px 0 8px; }
+    p { color: #9ca3af; }
+    a { color: #93c5fd; }
+    #status { font-size: .9rem; }
+    pre { box-sizing: border-box; min-height: 16vh; max-height: 42vh; overflow: auto; padding: 20px; border: 1px solid #374151;
+          border-radius: 8px; background: #030712; color: #d1fae5; font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+          white-space: pre-wrap; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Deployment and Nginx logs</h1>
+        <p>GitHub <code>release</code> branch · refreshes every 2 seconds · <a href="/">back to app</a></p>
+      </div>
+      <span id="status">Connecting…</span>
+    </header>
+    <h2>Fetch and deployment</h2>
+    <pre id="deployment" aria-live="polite">Waiting for deployment output…</pre>
+    <h2>Nginx access</h2>
+    <pre id="access" aria-live="polite">Waiting for requests…</pre>
+    <h2>Nginx errors</h2>
+    <pre id="errors" aria-live="polite">No upstream errors yet.</pre>
+  </main>
+  <script>
+    const status = document.getElementById('status');
+    const sources = [
+      ['/logs/deploy.log', document.getElementById('deployment'), 'Waiting for deployment output…'],
+      ['/logs/nginx-access.log', document.getElementById('access'), 'Waiting for requests…'],
+      ['/logs/nginx-error.log', document.getElementById('errors'), 'No upstream errors yet.'],
+    ];
+    async function update(url, output, emptyText) {
+      const response = await fetch(url, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`${url}: HTTP ${response.status}`);
+      const text = await response.text();
+      const atBottom = output.scrollTop + output.clientHeight >= output.scrollHeight - 30;
+      if (output.textContent !== text) {
+        output.textContent = text || emptyText;
+        if (atBottom) output.scrollTop = output.scrollHeight;
+      }
+    }
+    async function refresh() {
+      try {
+        await Promise.all(sources.map(args => update(...args)));
+        status.textContent = 'Connected';
+      } catch (error) {
+        status.textContent = `Log unavailable: ${error.message}`;
+      }
+    }
+    refresh();
+    setInterval(refresh, 2000);
+  </script>
+</body>
+</html>

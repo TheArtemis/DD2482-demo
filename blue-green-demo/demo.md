@@ -1,46 +1,67 @@
-# Push v2, then watch v3 fail safely
+# Push broken v3 twice
 
-On **your own machine**, create `release` from the current repository if it does not exist yet:
+If your GitHub repository has no `release` branch, create it from `main` in your VSCode checkout and push it first. This seeds the branch with v1:
 
 ```bash
 git switch -c release
 git push -u origin release
 ```
 
-If `release` already exists, switch to it and pull its latest commit instead. The GitHub Actions workflow runs unit tests on each push.
+Otherwise, switch to the existing `release` branch and pull it. Wait for the VM log page to finish any v1 deployment before continuing.
 
-In your local checkout, change `VERSION` to `"v2"` in `blue-green-demo/assets/app.py`, then push:
+## 1. Unsafe release: take the app down
+
+In VSCode, edit `blue-green-demo/assets/app.py` on `release` so it contains:
+
+```python
+VERSION = "v3"
+BROKEN = True
+```
+
+Push from your machine:
 
 ```bash
 git add blue-green-demo/assets/app.py
-git commit -m "Release v2"
+git commit -m "Try broken v3 without blue-green"
 git push origin release
 ```
 
-The VM polls every 10 seconds; the Docker build can take longer. In the **Killercoda terminal**, watch the deployment and confirm the result:
+If those two lines were already set from an earlier run, use `git commit --allow-empty -m "Retry broken v3"` before pushing. A new commit is needed because the VM deploys each commit once.
+
+Watch `/logs` until it says the unsafe deployment was rejected. The first deployment stops the live v1 container, runs v3 on the live port, then removes v3 after its health check fails. Nginx has no working app upstream. In the Killercoda terminal, request the app to produce a visible Nginx error:
 
 ```bash
-journalctl -u cd-demo-watch -f
-curl -s http://127.0.0.1/ | grep -E 'Version|Slot'
+curl -i http://127.0.0.1/
+```
+
+You should see HTTP 502 after v3 is removed. The Nginx access and error sections on `/logs` show the failed request. The GitHub unit-test workflow should also turn red for this commit; the VM deliberately does not wait for CI in this comparison.
+
+## 2. Restore v1 and enable blue/green
+
+In the **Killercoda terminal**:
+
+```bash
+/opt/cd-demo/reset-v1.sh
+curl -i http://127.0.0.1/
+cat /opt/cd-demo/deployment-mode
+```
+
+You should see v1, HTTP 200, and `blue-green`. The reset uses the bundled v1 image, so no GitHub push is needed.
+
+## 3. Push the same broken v3 with blue/green
+
+On **your machine**, create another commit while leaving `VERSION = "v3"` and `BROKEN = True`:
+
+```bash
+git commit --allow-empty -m "Try broken v3 with blue-green"
+git push origin release
+```
+
+The VM builds v3 in the inactive slot. Its health check fails, so Nginx keeps pointing to v1. Watch `/logs`, then confirm in the Killercoda terminal:
+
+```bash
+curl -i http://127.0.0.1/
 cat /opt/cd-demo/active-slot
 ```
 
-Press Ctrl+C to stop following the log. The release starts the inactive slot, checks `/health` and `/`, then switches Nginx only after both checks pass.
-
-Back on **your machine**, set `VERSION = "v3"` and `BROKEN = True` in `blue-green-demo/assets/app.py`, then push:
-
-```bash
-git add blue-green-demo/assets/app.py
-git commit -m "Attempt broken v3"
-git push origin release
-```
-
-The VM attempts this commit once. Its health check rejects v3, leaving v2 serving traffic. Check in Killercoda:
-
-```bash
-journalctl -u cd-demo-watch -n 30 --no-pager
-curl -s http://127.0.0.1/ | grep -E 'Version|Slot'
-curl -i http://127.0.0.1/health
-```
-
-To run the demo again, push a new commit on `release` that restores `VERSION = "v1"` and `BROKEN = False`.
+You should still see HTTP 200 and v1. The Nginx access log shows a successful request; there is no new upstream error for this attempt.

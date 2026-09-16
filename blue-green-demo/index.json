@@ -1,6 +1,6 @@
 {
   "title": "Continuous Deployment with Blue/Green",
-  "description": "Push a tiny Flask application to GitHub, then watch the VM fetch, validate, and deploy it with blue/green switching.",
+  "description": "Compare an unsafe release that breaks v1 with a blue/green release that keeps it available.",
   "details": {
     "intro": {
       "text": "intro.md",
@@ -8,7 +8,7 @@
     },
     "steps": [
       {
-        "title": "Release v2 and rollback v3",
+        "title": "Break the live app, then protect it with blue/green",
         "text": "demo.md"
       }
     ],
@@ -21,7 +21,10 @@
         { "file": "requirements.txt", "target": "/root/cd-demo" },
         { "file": "Dockerfile", "target": "/root/cd-demo" },
         { "file": "deploy.sh", "target": "/opt/cd-demo", "chmod": "+x" },
+        { "file": "deploy-unsafe.sh", "target": "/opt/cd-demo", "chmod": "+x" },
+        { "file": "reset-v1.sh", "target": "/opt/cd-demo", "chmod": "+x" },
         { "file": "watch-release.sh", "target": "/opt/cd-demo", "chmod": "+x" },
+        { "file": "logs.html", "target": "/opt/cd-demo" },
         { "file": "nginx-template.conf", "target": "/opt/cd-demo" }
       ]
     }

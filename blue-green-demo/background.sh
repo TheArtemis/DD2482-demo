@@ -21,12 +21,17 @@ rm -f /etc/nginx/sites-enabled/default
 systemctl enable --now nginx
 
 mkdir -p "$DEPLOY_ROOT/release" "$(dirname "$BARE_REPO")"
-chmod +x "$DEPLOY_ROOT/deploy.sh" "$DEPLOY_ROOT/watch-release.sh"
+chmod +x "$DEPLOY_ROOT/deploy.sh" "$DEPLOY_ROOT/deploy-unsafe.sh" \
+  "$DEPLOY_ROOT/reset-v1.sh" "$DEPLOY_ROOT/watch-release.sh"
+touch "$DEPLOY_ROOT/deploy.log" "$DEPLOY_ROOT/nginx-access.log" "$DEPLOY_ROOT/nginx-error.log"
+chmod 644 "$DEPLOY_ROOT/deploy.log" "$DEPLOY_ROOT/nginx-access.log" \
+  "$DEPLOY_ROOT/nginx-error.log" "$DEPLOY_ROOT/logs.html"
+printf '%s\n' unsafe > "$DEPLOY_ROOT/deployment-mode"
 
 # Boot with the bundled v1, even when the release branch has not been created yet.
 cp "$WORKING_REPO/app.py" "$WORKING_REPO/requirements.txt" \
   "$WORKING_REPO/Dockerfile" "$DEPLOY_ROOT/release/"
-"$DEPLOY_ROOT/deploy.sh" bundled-v1
+"$DEPLOY_ROOT/deploy.sh" bundled-v1 2>&1 | tee -a "$DEPLOY_ROOT/deploy.log"
 
 # Keep both fixed slot mappings visible at startup.
 docker run --detach --name app-green \
@@ -38,6 +43,13 @@ docker run --detach --name app-green \
 # watches main for scenario updates; it is not involved in app deployment.
 git init --bare "$BARE_REPO"
 git --git-dir="$BARE_REPO" remote add origin "$GITHUB_REPO"
+# If release already exists, treat its current commit as the starting point.
+# Only commits pushed after this VM starts should trigger the first deployment.
+if GIT_TERMINAL_PROMPT=0 git --git-dir="$BARE_REPO" fetch --quiet --depth=1 origin \
+  refs/heads/release:refs/remotes/origin/release; then
+  git --git-dir="$BARE_REPO" rev-parse refs/remotes/origin/release \
+    > "$DEPLOY_ROOT/last-attempted-revision"
+fi
 cat > /etc/systemd/system/cd-demo-watch.service <<'EOF'
 [Unit]
 Description=Watch GitHub release branch and deploy app changes
