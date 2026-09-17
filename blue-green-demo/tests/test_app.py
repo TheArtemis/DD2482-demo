@@ -1,47 +1,36 @@
-import os
 import sys
-import unittest
 from pathlib import Path
-from unittest.mock import patch
+
+import pytest
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "assets"))
 import app as demo_app
 
 
-class AppTests(unittest.TestCase):
-    def setUp(self):
-        self.client = demo_app.app.test_client()
-
-    def test_home_page_shows_version_and_slot(self):
-        with patch.dict(os.environ, {"SLOT": "BLUE"}):
-            with patch.object(demo_app, "VERSION", "test-version"), patch.object(
-                demo_app, "BROKEN", False
-            ):
-                response = self.client.get("/")
-
-        self.assertEqual(response.status_code, 200)
-        self.assertIn(b"Version: test-version", response.data)
-        self.assertIn(b"Slot: BLUE", response.data)
-
-    def test_healthy_release_passes_health_check(self):
-        with patch.object(demo_app, "BROKEN", False):
-            response = self.client.get("/health")
-
-        self.assertEqual(response.status_code, 200)
-
-    def test_broken_release_fails_health_check(self):
-        with patch.object(demo_app, "BROKEN", True):
-            response = self.client.get("/health")
-
-        self.assertEqual(response.status_code, 500)
-
-    def test_broken_release_fails_home_page(self):
-        with patch.object(demo_app, "BROKEN", True):
-            response = self.client.get("/")
-
-        self.assertEqual(response.status_code, 500)
+@pytest.fixture
+def client():
+    return demo_app.app.test_client()
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.mark.parametrize("slot", ["BLUE", "GREEN"])
+def test_home_page_shows_slot_and_version(client, monkeypatch, slot):
+    monkeypatch.setenv("SLOT", slot)
+    monkeypatch.setattr(demo_app, "VERSION", "test-version")
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert b"Version: test-version" in response.data
+    assert f'class="slot-{slot.lower()}"'.encode() in response.data
+    assert f'class="slot">{slot}</p>'.encode() in response.data
+
+
+@pytest.mark.parametrize("broken, expected_status", [(False, 200), (True, 500)])
+def test_health_reflects_release_state(client, monkeypatch, broken, expected_status):
+    monkeypatch.setattr(demo_app, "BROKEN", broken)
+    assert client.get("/health").status_code == expected_status
+
+
+def test_broken_release_fails_home_page(client, monkeypatch):
+    monkeypatch.setattr(demo_app, "BROKEN", True)
+    assert client.get("/").status_code == 500
