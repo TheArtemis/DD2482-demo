@@ -24,10 +24,15 @@ docker run --detach --name "app-$slot" \
   "$IMAGE_TAG" >/dev/null
 
 echo "UNSAFE: checking the replacement after it took over the live port"
-for _ in {1..10}; do
-  if curl --fail --silent "http://127.0.0.1:${port}/health" >/dev/null; then
+for attempt in {1..10}; do
+  if http_status=$(curl --fail --silent --output /dev/null --write-out '%{http_code}' \
+    --max-time 2 "http://127.0.0.1:${port}/health"); then
+    echo "UNSAFE: health check $attempt/10 for $slot: HTTP $http_status (passed)"
     echo "UNSAFE: replacement is healthy"
     exit 0
+  else
+    curl_status=$?
+    echo "UNSAFE: health check $attempt/10 for $slot: HTTP ${http_status:-000} (curl exit $curl_status)"
   fi
   sleep 1
 done

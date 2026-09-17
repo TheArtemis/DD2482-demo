@@ -34,10 +34,15 @@ docker run --detach --name "$candidate_name" \
 
 echo "Waiting for $candidate on :$candidate_port"
 healthy=false
-for _ in {1..10}; do
-  if curl --fail --silent "http://127.0.0.1:${candidate_port}/health" >/dev/null; then
+for attempt in {1..10}; do
+  if http_status=$(curl --fail --silent --output /dev/null --write-out '%{http_code}' \
+    --max-time 2 "http://127.0.0.1:${candidate_port}/health"); then
+    echo "Health check $attempt/10 for $candidate: HTTP $http_status (passed)"
     healthy=true
     break
+  else
+    curl_status=$?
+    echo "Health check $attempt/10 for $candidate: HTTP ${http_status:-000} (curl exit $curl_status)"
   fi
   sleep 1
 done

@@ -22,11 +22,16 @@ docker run --detach --name "app-$slot" \
   --publish "127.0.0.1:${port}:8000" \
   cd-demo:bundled-v1 >/dev/null
 
-for _ in {1..10}; do
-  if curl --fail --silent "http://127.0.0.1:${port}/health" >/dev/null; then
+for attempt in {1..10}; do
+  if http_status=$(curl --fail --silent --output /dev/null --write-out '%{http_code}' \
+    --max-time 2 "http://127.0.0.1:${port}/health"); then
+    echo "Reset health check $attempt/10 for $slot: HTTP $http_status (passed)"
     printf '%s\n' blue-green > "$MODE_FILE"
     echo "v1 restored; blue/green mode is enabled for the next release push"
     exit 0
+  else
+    curl_status=$?
+    echo "Reset health check $attempt/10 for $slot: HTTP ${http_status:-000} (curl exit $curl_status)"
   fi
   sleep 1
 done

@@ -12,7 +12,8 @@ def index():
     if BROKEN:
         return "application error", 500
 
-    slot = os.getenv("SLOT", "unknown")
+    slot = os.getenv("SLOT", "unknown").upper()
+    slot_class = slot.lower() if slot in {"BLUE", "GREEN"} else "unknown"
     return f"""
     <!doctype html>
     <html lang="en">
@@ -20,25 +21,48 @@ def index():
         <title>Continuous Deployment Demo</title>
         <style>
             body {{
-                background: #eaf4ff;
-                color: #17324d;
+                box-sizing: border-box;
+                min-height: 100vh;
+                margin: 0;
+                background: #334155;
+                color: #fff;
                 font-family: Arial, sans-serif;
                 text-align: center;
-                padding: 60px 20px;
+                padding: 12vh 20px 40px;
+            }}
+            body.slot-blue {{
+                background: linear-gradient(135deg, #0735a3, #0878e8);
+            }}
+            body.slot-green {{
+                background: linear-gradient(135deg, #075c2a, #09aa54);
+            }}
+            h1 {{ font-size: clamp(2.5rem, 6vw, 5rem); margin: 0 0 36px; }}
+            .slot {{
+                display: inline-block;
+                border: 5px solid #fff;
+                border-radius: 16px;
+                padding: 18px 40px;
+                font-size: clamp(3rem, 9vw, 7rem);
+                font-weight: 900;
+                letter-spacing: .08em;
+                text-shadow: 0 3px 8px #0007;
             }}
             .version {{
-                background: #cfe5ff;
-                border-radius: 8px;
+                background: #fff;
+                color: #172033;
+                border-radius: 12px;
                 display: inline-block;
-                padding: 12px 24px;
+                padding: 14px 32px;
+                font-size: 2rem;
+                font-weight: bold;
             }}
-            a {{ color: #1766a6; }}
+            a {{ color: #fff; font-size: 1.3rem; }}
         </style>
     </head>
-    <body>
+    <body class="slot-{slot_class}">
         <h1>Continuous Deployment Demo</h1>
-        <p class="version">Version: {VERSION}</p>
-        <p>Slot: {slot}</p>
+        <p class="slot">{slot}</p>
+        <p><span class="version">Version: {VERSION}</span></p>
         <p><a href="/logs">Live deployment logs</a></p>
     </body>
     </html>
