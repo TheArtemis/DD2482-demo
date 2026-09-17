@@ -7,6 +7,6 @@ VERSION = "v3"
 BROKEN = True
 ```
 
-The unsafe deployer stops live v1 before validating v3. The candidate fails its health check and is removed, leaving Nginx without an app upstream.
+The unsafe deployer stops live v1 and starts v3 on the same port. It does no health check, so the broken app stays live.
 
-**Result:** The app returns **HTTP 502**. The deployment log at `/logs` shows the failure. GitHub Actions stays green because the unit tests verify both healthy and broken responses; they do not approve a release for live traffic.
+**Result:** The app returns **HTTP 500**. The deployment log at `/logs` shows that v3 went live without validation. GitHub Actions stays green because the unit tests verify both healthy and broken responses; they do not approve a release for live traffic.

@@ -17,6 +17,7 @@ def client():
 def test_home_page_shows_slot_and_version(client, monkeypatch, slot):
     monkeypatch.setenv("SLOT", slot)
     monkeypatch.setattr(demo_app, "VERSION", "test-version")
+    monkeypatch.setattr(demo_app, "BROKEN", False)
     response = client.get("/")
 
     assert response.status_code == 200
