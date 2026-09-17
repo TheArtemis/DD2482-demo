@@ -3,8 +3,8 @@ import os
 
 app = Flask(__name__)
 
-VERSION = "v2"
-BROKEN = True
+VERSION = "v1"
+BROKEN = False
 
 
 @app.get("/")
